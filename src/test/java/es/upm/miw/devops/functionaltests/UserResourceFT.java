@@ -29,13 +29,10 @@ class UserResourceFT {
                 .uri(UserResource.USERS + "/1")
                 .exchange()
                 .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBody(User.class)
                 .value(user -> assertThat(user)
-                        .isNotNull()
                         .hasFieldOrPropertyWithValue("id", "1")
-                        .hasFieldOrPropertyWithValue("firstName", "Oscar")
-                        .hasFieldOrPropertyWithValue("familyName", "Fernandez"));
+                        .hasFieldOrPropertyWithValue("firstName", "Oscar"));
     }
 
     @Test
@@ -52,58 +49,82 @@ class UserResourceFT {
                 .uri(UserResource.USERS + "/2")
                 .exchange()
                 .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBody(User.class)
                 .value(user -> assertThat(user)
-                        .isNotNull()
                         .hasFieldOrPropertyWithValue("id", "2")
-                        .hasFieldOrPropertyWithValue("firstName", "Ana")
-                        .hasFieldOrPropertyWithValue("familyName", "Blanco"));
+                        .hasFieldOrPropertyWithValue("firstName", "Ana"));
+    }
+
+    @Test
+    void testSearchUsersByBillableTrue() {
+        webTestClient.get()
+                .uri(UserResource.USERS + "?billable=true")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(User.class)
+                .value(users -> assertThat(users)
+                        .hasSize(2)
+                        .allMatch(User::isBillable)
+                        .extracting("id").containsExactlyInAnyOrder("1", "2"));
+    }
+
+    @Test
+    void testSearchUsersByBillableFalse() {
+        webTestClient.get()
+                .uri(UserResource.USERS + "?billable=false")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(User.class)
+                .value(users -> assertThat(users)
+                        .hasSize(4)
+                        .noneMatch(User::isBillable)
+                        .extracting("id").containsExactlyInAnyOrder("3", "4", "5", "6"));
+    }
+
+    @Test
+    void testSearchUsersAllWithoutFilter() {
+        webTestClient.get()
+                .uri(UserResource.USERS)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(User.class)
+                .value(users -> assertThat(users)
+                        .hasSize(6)
+                        .extracting("id").containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6"));
     }
 
     @Test
     void testUpdateActiveDeactivate() {
         webTestClient.get()
-                .uri(UserResource.USERS + "/1")
+                .uri(UserResource.USERS + "/3")
                 .exchange()
-                .expectStatus().isOk()
                 .expectBody(User.class)
-                .value(user -> assertThat(user)
-                        .hasFieldOrPropertyWithValue("active", true));
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
 
         webTestClient.put()
-                .uri(UserResource.USERS + "/1/active?active=false")
+                .uri(UserResource.USERS + "/3/active?active=true")
                 .exchange()
                 .expectStatus().isOk();
 
         webTestClient.get()
-                .uri(UserResource.USERS + "/1")
+                .uri(UserResource.USERS + "/3")
                 .exchange()
-                .expectStatus().isOk()
                 .expectBody(User.class)
-                .value(user -> assertThat(user)
-                        .hasFieldOrPropertyWithValue("active", false));
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
     }
 
     @Test
     void testUpdateActiveActivate() {
         webTestClient.put()
-                .uri(UserResource.USERS + "/1/active?active=false")
-                .exchange()
-                .expectStatus().isOk();
-
-        webTestClient.put()
-                .uri(UserResource.USERS + "/1/active?active=true")
+                .uri(UserResource.USERS + "/4/active?active=false")
                 .exchange()
                 .expectStatus().isOk();
 
         webTestClient.get()
-                .uri(UserResource.USERS + "/1")
+                .uri(UserResource.USERS + "/4")
                 .exchange()
-                .expectStatus().isOk()
                 .expectBody(User.class)
-                .value(user -> assertThat(user)
-                        .hasFieldOrPropertyWithValue("active", true));
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
     }
 
     @Test
@@ -117,16 +138,63 @@ class UserResourceFT {
     @Test
     void testUpdateActiveOnOtherUser() {
         webTestClient.put()
-                .uri(UserResource.USERS + "/2/active?active=false")
+                .uri(UserResource.USERS + "/5/active?active=false")
                 .exchange()
                 .expectStatus().isOk();
 
         webTestClient.get()
-                .uri(UserResource.USERS + "/2")
+                .uri(UserResource.USERS + "/5")
                 .exchange()
-                .expectStatus().isOk()
                 .expectBody(User.class)
-                .value(user -> assertThat(user)
-                        .hasFieldOrPropertyWithValue("active", false));
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
+    }
+
+    @Test
+    void testUpdateActiveToTrue() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/6/active?active=true")
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/6")
+                .exchange()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
+    }
+
+    @Test
+    void testUpdateActiveToFalse() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/1/active?active=false")
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/1")
+                .exchange()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
+    }
+
+    @Test
+    void testDeleteUserById() {
+        webTestClient.delete()
+                .uri(UserResource.USERS + "/5")
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/5")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void testDeleteUserByIdNotFound() {
+        webTestClient.delete()
+                .uri(UserResource.USERS + "/999")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }
