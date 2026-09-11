@@ -23,10 +23,14 @@ public class UserService {
                         HttpStatus.NOT_FOUND, "Non existent user with id: " + id));
     }
 
-    // NUEVO: Método search con filtro billable
     public List<User> search(Boolean billable) {
         return this.usersDatabase.findAll()
                 .filter(user -> billable == null || billable == user.isBillable())
                 .toList();
+    }
+
+    public void deleteById(String id) {
+        this.readById(id);
+        this.usersDatabase.deleteById(id);
     }
 }

@@ -2,6 +2,7 @@ package es.upm.miw.devops.rest;
 
 import es.upm.miw.devops.code.User;
 import es.upm.miw.devops.service.UserService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,9 +29,13 @@ public class UserResource {
         return this.userService.readById(id);
     }
 
-    // NUEVO: Endpoint search con filtro billable
     @GetMapping
     public List<User> search(@RequestParam(required = false) Boolean billable) {
         return this.userService.search(billable);
+    }
+
+    @DeleteMapping(ID_ID)
+    public void deleteById(@PathVariable String id) {
+        this.userService.deleteById(id);
     }
 }
