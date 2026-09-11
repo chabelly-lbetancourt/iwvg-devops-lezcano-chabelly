@@ -60,4 +60,73 @@ class UserResourceFT {
                         .hasFieldOrPropertyWithValue("firstName", "Ana")
                         .hasFieldOrPropertyWithValue("familyName", "Blanco"));
     }
+
+    @Test
+    void testUpdateActiveDeactivate() {
+        webTestClient.get()
+                .uri(UserResource.USERS + "/1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(User.class)
+                .value(user -> assertThat(user)
+                        .hasFieldOrPropertyWithValue("active", true));
+
+        webTestClient.put()
+                .uri(UserResource.USERS + "/1/active?active=false")
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(User.class)
+                .value(user -> assertThat(user)
+                        .hasFieldOrPropertyWithValue("active", false));
+    }
+
+    @Test
+    void testUpdateActiveActivate() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/1/active?active=false")
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.put()
+                .uri(UserResource.USERS + "/1/active?active=true")
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(User.class)
+                .value(user -> assertThat(user)
+                        .hasFieldOrPropertyWithValue("active", true));
+    }
+
+    @Test
+    void testUpdateActiveNotFound() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/999/active?active=false")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    void testUpdateActiveOnOtherUser() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/2/active?active=false")
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/2")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(User.class)
+                .value(user -> assertThat(user)
+                        .hasFieldOrPropertyWithValue("active", false));
+    }
 }
