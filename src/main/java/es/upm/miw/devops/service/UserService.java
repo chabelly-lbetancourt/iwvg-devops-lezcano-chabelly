@@ -33,4 +33,9 @@ public class UserService {
         this.readById(id);
         this.usersDatabase.deleteById(id);
     }
+
+    public void updateActive(String id, boolean active) {
+        User user = this.readById(id);
+        user.setActive(active);
+    }
 }
