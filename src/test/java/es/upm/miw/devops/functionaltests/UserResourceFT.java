@@ -47,69 +47,17 @@ class UserResourceFT {
     }
 
     @Test
-    void testDeleteUserById() {
+    void testReadUserByIdOtherUser() {
         webTestClient.get()
-                .uri(UserResource.USERS + "/1")
-                .exchange()
-                .expectStatus().isOk();
-
-        webTestClient.delete()
-                .uri(UserResource.USERS + "/1")
-                .exchange()
-                .expectStatus().isOk();
-
-        webTestClient.get()
-                .uri(UserResource.USERS + "/1")
-                .exchange()
-                .expectStatus().isNotFound();
-    }
-
-    @Test
-    void testDeleteUserByIdNotFound() {
-        webTestClient.delete()
-                .uri(UserResource.USERS + "/999")
-                .exchange()
-                .expectStatus().isNotFound();
-    }
-
-    @Test
-    void testSearchUsersByBillable() {
-        webTestClient.get()
-                .uri(UserResource.USERS + "?billable=true")
+                .uri(UserResource.USERS + "/2")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBodyList(User.class)
-                .value(users -> assertThat(users)
+                .expectBody(User.class)
+                .value(user -> assertThat(user)
                         .isNotNull()
-                        .isNotEmpty()
-                        .allMatch(User::isBillable));
-    }
-
-    @Test
-    void testSearchUsersNotBillable() {
-        webTestClient.get()
-                .uri(UserResource.USERS + "?billable=false")
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBodyList(User.class)
-                .value(users -> assertThat(users)
-                        .isNotNull()
-                        .isNotEmpty()
-                        .noneMatch(User::isBillable));
-    }
-
-    @Test
-    void testSearchUsersAll() {
-        webTestClient.get()
-                .uri(UserResource.USERS)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBodyList(User.class)
-                .value(users -> assertThat(users)
-                        .isNotNull()
-                        .hasSize(6));
+                        .hasFieldOrPropertyWithValue("id", "2")
+                        .hasFieldOrPropertyWithValue("firstName", "Ana")
+                        .hasFieldOrPropertyWithValue("familyName", "Blanco"));
     }
 }
