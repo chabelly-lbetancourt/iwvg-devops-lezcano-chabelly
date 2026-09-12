@@ -1,19 +1,45 @@
 package es.upm.miw.devops.code;
 
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "users")
 public class User {
+
+    @Id
     private String id;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "family_name", nullable = false)
     private String familyName;
+
+    @Column(name = "email")
     private String email;
+
+    @Column(name = "identity")
     private String identity;
+
+    @Column(name = "address")
     private String address;
+
+    @Column(name = "city")
     private String city;
+
+    @Column(name = "province")
     private String province;
+
+    @Column(name = "postal_code")
     private String postalCode;
+
+    @Column(name = "active")
     private boolean active;
+
+    @Transient
     private List<Fraction> fractions;
 
     public User() {
@@ -29,7 +55,6 @@ public class User {
         this.fractions = fractions;
     }
 
-    // Getters y Setters
     public String getId() {
         return id;
     }
@@ -118,7 +143,6 @@ public class User {
         this.fractions.add(fraction);
     }
 
-    // Método de negocio: ¿es billable?
     public boolean isBillable() {
         return isNotBlank(firstName)
                 && isNotBlank(familyName)
