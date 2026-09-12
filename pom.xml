@@ -134,7 +134,8 @@
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <argLine>
-                        -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+                        <!-- -javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar -->
+                        -Xshare:off
                         -Xshare:off
                     </argLine>
                 </configuration>
@@ -153,6 +154,9 @@
                         <configuration>
                             <includes>
                                 <include>**/*IT.java</include>
+                                <include>**/*FT.java</include>
+                                <include>**/*Test.java</include>
+                                <include>**/*Tests.java</include>
                             </includes>
                         </configuration>
                     </execution>
