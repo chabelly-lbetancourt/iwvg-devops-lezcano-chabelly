@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -23,6 +24,7 @@ class UserResourceFT {
     @Autowired
     private WebTestClient webTestClient;
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testReadUserById() {
         webTestClient.get()
@@ -35,6 +37,7 @@ class UserResourceFT {
                         .hasFieldOrPropertyWithValue("firstName", "Oscar"));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testReadUserByIdNotFound() {
         webTestClient.get()
@@ -43,6 +46,7 @@ class UserResourceFT {
                 .expectStatus().isNotFound();
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testReadUserByIdOtherUser() {
         webTestClient.get()
@@ -55,6 +59,7 @@ class UserResourceFT {
                         .hasFieldOrPropertyWithValue("firstName", "Ana"));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testSearchUsersByBillableTrue() {
         webTestClient.get()
@@ -68,6 +73,7 @@ class UserResourceFT {
                         .extracting("id").containsExactlyInAnyOrder("1", "2"));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testSearchUsersByBillableFalse() {
         webTestClient.get()
@@ -81,6 +87,7 @@ class UserResourceFT {
                         .extracting("id").containsExactlyInAnyOrder("3", "4", "5", "6"));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testSearchUsersAllWithoutFilter() {
         webTestClient.get()
@@ -93,6 +100,7 @@ class UserResourceFT {
                         .extracting("id").containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6"));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testUpdateActiveDeactivate() {
         webTestClient.get()
@@ -113,6 +121,7 @@ class UserResourceFT {
                 .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testUpdateActiveActivate() {
         webTestClient.put()
@@ -127,6 +136,7 @@ class UserResourceFT {
                 .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testUpdateActiveNotFound() {
         webTestClient.put()
@@ -135,6 +145,7 @@ class UserResourceFT {
                 .expectStatus().isNotFound();
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testUpdateActiveOnOtherUser() {
         webTestClient.put()
@@ -149,6 +160,7 @@ class UserResourceFT {
                 .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testUpdateActiveToTrue() {
         webTestClient.put()
@@ -163,6 +175,7 @@ class UserResourceFT {
                 .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testUpdateActiveToFalse() {
         webTestClient.put()
@@ -177,6 +190,7 @@ class UserResourceFT {
                 .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testDeleteUserById() {
         webTestClient.delete()
@@ -190,6 +204,7 @@ class UserResourceFT {
                 .expectStatus().isNotFound();
     }
 
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void testDeleteUserByIdNotFound() {
         webTestClient.delete()

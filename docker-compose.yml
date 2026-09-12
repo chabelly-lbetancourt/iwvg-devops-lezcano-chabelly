@@ -1,15 +1,48 @@
+version: '3.8'
+
 services:
+  postgres:
+    image: postgres:15.10
+    container_name: postgres-server
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: devops_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - devopsNet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   devops:
     build: .
     image: devops:latest
     restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-server:5432/devopsDb
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
     ports:
       - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - devopsNet
+
+volumes:
+  postgres_data:
+    name: "postgres-data"
 
 networks:
   devopsNet:
     external: true
-
-#> docker compose up --build -d
