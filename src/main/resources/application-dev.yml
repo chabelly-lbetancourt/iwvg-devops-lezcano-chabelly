@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/devopsDb
+    url: jdbc:postgresql://localhost:5432/devops_db
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
