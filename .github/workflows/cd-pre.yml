@@ -1,11 +1,11 @@
-name: CD
+name: CD PRE
 on:
   push:
-    branches: [main]
+    branches: [staging]
 
 jobs:
   cd:
-    name: Build & Push GitHub Package
+    name: Build & Push GitHub Package & Deploy on Render
     runs-on: ubuntu-22.04
     steps:
       - name: ⬇️ Checkout repository
@@ -47,3 +47,15 @@ jobs:
           tags: |
             ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:${{ env.VERSION }}
             ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:latest
+
+      # 🌐 Render Deployment
+      # 1. En Render: Web Service → Settings → Deploy Hook → copiar el token
+      # 2. En GitHub: Settings → Secrets and variables → Actions → crear secret: RENDER_DEPLOY_HOOK_TOKEN
+      - name: 🚀 Deploy on Render
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_TOKEN }}
+        run: |
+          HOOK=$(printf '%s' "$HOOK" | tr -d '[:space:]"')
+          curl --fail -X POST "https://api.render.com/deploy/${HOOK}" \
+          && echo "✅ Deployment succeeded" \
+          || (echo "❌ Deployment failed" && exit 1)
