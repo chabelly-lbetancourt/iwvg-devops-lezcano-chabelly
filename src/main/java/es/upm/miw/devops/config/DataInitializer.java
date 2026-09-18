@@ -1,5 +1,6 @@
 package es.upm.miw.devops.config;
 
+import es.upm.miw.devops.code.Role;
 import es.upm.miw.devops.code.User;
 import es.upm.miw.devops.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -31,6 +32,7 @@ public class DataInitializer {
                 user2.setCity("Valencia");
                 user2.setProvince("Valencia");
                 user2.setPostalCode("46001");
+                user2.addRole(Role.ADMIN);
                 userRepository.save(user2);
 
                 User user3 = new User("3", "Oscar", "Ruiz", new ArrayList<>());

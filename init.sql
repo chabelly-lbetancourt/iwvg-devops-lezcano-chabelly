@@ -18,3 +18,10 @@ INSERT INTO users (id, first_name, family_name, email, identity, address, city, 
 ('4', 'Paula', 'Torres', 'paula@example.com', '11223344C', 'Plaza Sol 2', 'Sevilla', 'Sevilla', '   ', false),
 ('5', 'Antonio', 'Delgado', null, null, null, null, null, null, false),
 ('6', 'Paula', 'Villa', null, null, null, null, null, null, false);
+
+CREATE TABLE IF NOT EXISTS user_roles (
+                                          user_id VARCHAR(255) NOT NULL REFERENCES users(id),
+    role    VARCHAR(255) NOT NULL
+    );
+
+INSERT INTO user_roles (user_id, role) VALUES ('2', 'ADMIN');
