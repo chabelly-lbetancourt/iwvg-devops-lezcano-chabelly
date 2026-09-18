@@ -1,7 +1,7 @@
 name: CD PRE
 on:
   push:
-    branches: [staging]
+    branches: [staging, main]
 
 jobs:
   cd:
