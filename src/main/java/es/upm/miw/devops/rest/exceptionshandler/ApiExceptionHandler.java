@@ -1,6 +1,8 @@
 package es.upm.miw.devops.rest.exceptionshandler;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -13,13 +15,20 @@ public class ApiExceptionHandler {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({
-            NoResourceFoundException.class,
-            ResponseStatusException.class
-
+            NoResourceFoundException.class
     })
     @ResponseBody
     public ErrorMessage noResourceFoundRequest(Exception exception) {
         return new ErrorMessage(exception, HttpStatus.NOT_FOUND.value());
+    }
+
+    @ExceptionHandler({
+            ResponseStatusException.class
+    })
+    public ResponseEntity<ErrorMessage> responseStatusRequest(ResponseStatusException exception) {
+        HttpStatusCode status = exception.getStatusCode();
+        return ResponseEntity.status(status)
+                .body(new ErrorMessage(exception, status.value()));
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

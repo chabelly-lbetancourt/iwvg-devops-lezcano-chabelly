@@ -212,4 +212,29 @@ class UserResourceFT {
                 .exchange()
                 .expectStatus().isNotFound();
     }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testUpdateActiveAdminDeactivateForbidden() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/2/active?active=false")
+                .exchange()
+                .expectStatus().isForbidden();
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/2")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
+    }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testUpdateActiveAdminActivateAllowed() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/2/active?active=true")
+                .exchange()
+                .expectStatus().isOk();
+    }
 }

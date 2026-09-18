@@ -1,5 +1,6 @@
 package es.upm.miw.devops.code;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -41,6 +42,12 @@ public class User {
 
     @Transient
     private List<Fraction> fractions;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private List<Role> roles = new ArrayList<>();
 
     public User() {
         this.active = true;
@@ -143,6 +150,23 @@ public class User {
         this.fractions.add(fraction);
     }
 
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
+
+    public void addRole(Role role) {
+        this.roles.add(role);
+    }
+
+    @JsonIgnore
+    public boolean hasRole(Role role) {
+        return this.roles != null && this.roles.contains(role);
+    }
+
     public boolean isBillable() {
         return isNotBlank(firstName)
                 && isNotBlank(familyName)
@@ -174,6 +198,7 @@ public class User {
                 ", familyName='" + familyName + '\'' +
                 ", email='" + email + '\'' +
                 ", active=" + active +
+                ", roles=" + roles +
                 '}';
     }
 }
