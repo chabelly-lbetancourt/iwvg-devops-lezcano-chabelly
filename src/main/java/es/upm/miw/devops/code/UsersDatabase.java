@@ -72,8 +72,9 @@ public class UsersDatabase {
         user4.setPostalCode("   "); // EN BLANCO
         this.users.add(user4);
 
-        // Usuario 5: NO BILLABLE (solo name fields)
+        // Usuario 5: NO BILLABLE (solo name fields) + ADMIN (cannot be deactivated)
         User user5 = new User("5", "Antonio", "Delgado", new ArrayList<>());
+        user5.addRole(Role.ADMIN);
         this.users.add(user5);
 
         // Usuario 6: NO BILLABLE (sin campos)
