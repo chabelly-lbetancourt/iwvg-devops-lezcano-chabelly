@@ -3,6 +3,7 @@ package es.upm.miw.devops.service;
 import es.upm.miw.devops.code.Role;
 import es.upm.miw.devops.code.User;
 import es.upm.miw.devops.repository.UserRepository;
+import es.upm.miw.devops.rest.dto.UserActiveDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -107,5 +108,63 @@ class UserServiceTest {
 
         assertFalse(user.isActive());
         verify(this.userRepository).save(user);
+    }
+
+    @Test
+    void testUpdateWhenUserExists() {
+        User existing = new User("1", "Oscar", "Fernandez", new ArrayList<>());
+        User newData = new User("ignored", "Oscar", "Updated", new ArrayList<>());
+        newData.setEmail("new@example.com");
+        when(this.userRepository.findById("1")).thenReturn(Optional.of(existing));
+        when(this.userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User result = this.userService.update("1", newData);
+
+        assertEquals("1", result.getId());
+        assertEquals("Updated", result.getFamilyName());
+        assertEquals("new@example.com", result.getEmail());
+        verify(this.userRepository).save(existing);
+    }
+
+    @Test
+    void testUpdateWhenUserNotExists() {
+        when(this.userRepository.findById("999")).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class,
+                () -> this.userService.update("999", new User()));
+        verify(this.userRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateActiveAllUpdatesEveryUser() {
+        User first = new User("1", "Oscar", "Fernandez", new ArrayList<>());
+        User second = new User("3", "Oscar", "Ruiz", new ArrayList<>());
+        second.setActive(false);
+        when(this.userRepository.findById("1")).thenReturn(Optional.of(first));
+        when(this.userRepository.findById("3")).thenReturn(Optional.of(second));
+
+        this.userService.updateActiveAll(List.of(
+                new UserActiveDto("1", false), new UserActiveDto("3", true)));
+
+        assertFalse(first.isActive());
+        assertTrue(second.isActive());
+        verify(this.userRepository).save(first);
+        verify(this.userRepository).save(second);
+    }
+
+    @Test
+    void testUpdateActiveAllWhenUserNotExists() {
+        when(this.userRepository.findById("999")).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class,
+                () -> this.userService.updateActiveAll(List.of(new UserActiveDto("999", true))));
+    }
+
+    @Test
+    void testUpdateActiveAllWithMissingFields() {
+        assertThrows(ResponseStatusException.class,
+                () -> this.userService.updateActiveAll(List.of(new UserActiveDto("1", null))));
+        assertThrows(ResponseStatusException.class,
+                () -> this.userService.updateActiveAll(List.of(new UserActiveDto(null, true))));
     }
 }
