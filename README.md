@@ -11,8 +11,23 @@
 
 ### Estado del código
 [![DevOps](https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly/actions/workflows/continuous-integration.yml/badge.svg)](https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly/actions/workflows/continuous-integration.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=es.upm.miw%3Aiwvg-devops&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=es.upm.miw%3Aiwvg-devops)
-[![Render broken](https://iwvg-devops-latest.onrender.com/version-badge)](https://iwvg-devops-latest.onrender.com/swagger-ui.html)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=iwvg-devops-lezcano-chabelly&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=iwvg-devops-lezcano-chabelly)
+[![CD PRE](https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly/actions/workflows/cd-pre.yml/badge.svg)](https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly/actions/workflows/cd-pre.yml)
+[![CD PRO](https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly/actions/workflows/cd-pro.yml/badge.svg)](http://13.39.159.173/swagger-ui/index.html)
+[![Render](https://iwvg-devops-lezcano-chabelly.onrender.com/swagger-ui/index.html)]
+
+### Project links
+| Service | Link |
+|---|---|
+| GitHub repository | https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly |
+| Scrum board (GitHub Projects) | https://github.com/users/chabelly-lbetancourt/projects/1 |
+| Continuous integration (GitHub Actions) | https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly/actions |
+| Code quality (SonarCloud) | https://sonarcloud.io/summary/new_code?id=iwvg-devops-lezcano-chabelly |
+| Slack notifications | https://app.slack.com/client/T0C0LBG8K6X/C0C0SH8KXK4 |
+| Docker images (GitHub Packages) | https://github.com/chabelly-lbetancourt?tab=packages&repo_name=iwvg-devops-lezcano-chabelly |
+| PRE environment (Render) | https://iwvg-devops-lezcano-chabelly.onrender.com |
+| PRO environment (AWS Lightsail) | http://13.39.159.173/swagger-ui/index.html |
+| Releases | https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly/releases |
 
 
 ### Tecnologías necesarias
@@ -24,7 +39,7 @@
 cd <folder path>
 git clone https://github.com/chabelly-lbetancourt/iwvg-devops-lezcano-chabelly
 ```
-2. Importar el proyecto mediante **IntelliJ IDEA**  
+2. Importar el proyecto mediante **IntelliJ IDEA**
    * **Open**, y seleccionar la carpeta del proyecto.
 
 ### :gear: Ejecución en local con IntelliJ
@@ -53,7 +68,7 @@ docker compose up --build -d
 * Cliente Web: `http://localhost:8080`
 
 ### :book: Diapositivas
-* [Diapositivas de DevOps](docs/miw-iwvg-devops-slides.pdf)   
+* [Diapositivas de DevOps](docs/miw-iwvg-devops-slides.pdf)
 
 ### :dvd: [Plantilla de la práctica en _docs/iwvg-devops-template.zip_](docs/iwvg-devops-template.zip)
 
@@ -67,10 +82,10 @@ plantilla en la plataforma de Moodle.
 > Recordar cambiar el nombre de la  carpeta.   
 > Recordar editar el pom y cambiar el nombre del artefacto (artifactId).
 > Importarlo desde IntelliJ.   
-> Crear un repositorio en GitHub con el mensaje del primer comit: "Initial. Nombre Apellido"   
- 
+> Crear un repositorio en GitHub con el mensaje del primer comit: "Initial. Nombre Apellido"
+
 #### 2. Preparar la gestión mediante Scrum (**0.5 pto**)
-> Crear un proyecto de gestión en GitHub y prepararlo para la metodología de Scrum (columnas, etiquetas, hitos...). 
+> Crear un proyecto de gestión en GitHub y prepararlo para la metodología de Scrum (columnas, etiquetas, hitos...).
 > Recordar hacerlo `public` para que se pueda visualizar.
 
 #### 3. Preparación del ecosistema (**2.5 ptos**)
@@ -88,7 +103,7 @@ Se crearán las siguientes 3 historias (**Technical**) pero se trabajarán solo 
 Se crearán las siguientes 4 historias (**Feature**).
 * Feature 1ª: :one: añadir el endpoint: **GET /user/{id}**, sin tests. :five: Crear tests del servicio y del endpoint. Los tests deben realizarse sabiendo que hay un seeder.
 * Feature 2ª: :two: mejorar el filtro de busqueda añadiendo una tercera condición: **billable**, significa que el usuario es facturable,
-eso ocurre cuando sus campos firstName, familyName, email, identity, address, city, province, postalCode tienen contenido real. :eight: añadir los tests de servicio y endpoint.
+  eso ocurre cuando sus campos firstName, familyName, email, identity, address, city, province, postalCode tienen contenido real. :eight: añadir los tests de servicio y endpoint.
 * Feature 3ª: :three: añadir el endpoint: **DELETE /user/{id}**, sin tests. :four: añadir los tests de servicio y endpoint.
 * Feature 4ª: :six: añadir el endpoint: **PUT /user/{id}/active**, sin tests. :seven: añadir los tests de servicio y endpoint.
 > :one:, :two:... representa el orden temporal de desarrollo de los features. Cuando un feature se termine se debe incorporar a la rama **develop**. Cuando un feature se inicie, siempre empieza de donde este develop.
@@ -107,12 +122,12 @@ Se crearán las siguientes 2 historias (**Feature**).
 > Suponer que la Feature 2ª anterior existe un error. Error encontrado es que si el user contiene el roll de ADMIN, no se puede desactivar, aspecto que no se tenía en cuenta. Realizar un cambio y proceder a la cuarta liberación del código **staging** y **main**.
 
 ### :white_check_mark: Criterios transversales **con pérdida de puntos por falta de calidad**
-* Uso correcto del flujo de trabajo ramificado. **Hasta -3 ptos**. 
+* Uso correcto del flujo de trabajo ramificado. **Hasta -3 ptos**.
 * Adecuación de la temporalidad de desarrollo según el enunciado. **Hasta -3 ptos**.
 * Mantenimiento de calidad del código según GitHub Actions, Sonar. Cobertura >= 80%. **Hasta -3 ptos**.
 * Gestión adecuada, completa y equlibrada (estimación, tiempo real...) durante el desarrollo. **Hasta -2 ptos**.
-* Commits correctos y completos. **Hasta -2 ptos**. 
-* Código limpio, bien formateado y ordenado. **Hasta -2 ptos**. 
+* Commits correctos y completos. **Hasta -2 ptos**.
+* Código limpio, bien formateado y ordenado. **Hasta -2 ptos**.
 * Uso del ingles. **Hasta -1 pto**.
 
 
@@ -122,5 +137,3 @@ Indicar como texto en la subida la **URL de GitHub**
 
 Ejemplo resuelto:
 ![](./docs/miw-iwvg-devops-demo.png)
-
-
