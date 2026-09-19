@@ -8,6 +8,7 @@ jobs:
   cd:
     name: Build & Push GitHub Package & Deploy on AWS Lightsail
     runs-on: ubuntu-22.04
+
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
@@ -15,22 +16,22 @@ jobs:
           fetch-depth: 0
 
       - name: ☕ Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
           cache: maven
 
-      - name: 🏷️ Extract registry, repository (lowercase) & version from pom
+      - name: 🏷️ Prepare container image metadata (repository in lowercase, artifact, version...)
         run: |
-          echo "GHCR_URL=ghcr.io" >> $GITHUB_ENV
           echo "REPOSITORY=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+          echo "ARTIFACT=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
           echo "VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 📦 Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.GHCR_URL }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PERSONAL_ACCESS_TOKEN }}
 
@@ -39,33 +40,55 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:${{ env.VERSION }}
+          tags: |
+            ghcr.io/${{ env.REPOSITORY }}:${{ env.VERSION }}
+            ghcr.io/${{ env.REPOSITORY }}:latest
 
       - name: 🚀 Deploy on AWS Lightsail
-        env:
-          HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          REMOTE_USER: ${{ secrets.LIGHTSAIL_USER }}
-          SSH_KEY: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-          GHCR_TOKEN: ${{ secrets.GHCR_PERSONAL_ACCESS_TOKEN }}
-          GH_USER: ${{ github.actor }}
-          IMAGE: ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:${{ env.VERSION }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
-          chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
-          SSH_OPTS="-i $HOME/.ssh/id_deploy -o BatchMode=yes -o StrictHostKeyChecking=yes"
+        uses: appleboy/ssh-action@v1.2.1
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script_stop: true
+          script: |
+            printf '%s' "${{ secrets.GHCR_PERSONAL_ACCESS_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-          ssh $SSH_OPTS "$REMOTE_USER@$HOST" "mkdir -p ~/app"
-          scp $SSH_OPTS docker-compose.prod.yml init.sql "$REMOTE_USER@$HOST:~/app/"
-          printf '%s' "$GHCR_TOKEN" | ssh $SSH_OPTS "$REMOTE_USER@$HOST" \
-            "docker login ghcr.io -u '$GH_USER' --password-stdin"
-          ssh $SSH_OPTS "$REMOTE_USER@$HOST" \
-            "cd ~/app && IMAGE='$IMAGE' docker compose -f docker-compose.prod.yml pull \
-             && IMAGE='$IMAGE' docker compose -f docker-compose.prod.yml up -d --remove-orphans \
-             && docker image prune -f"
+            docker pull ghcr.io/${{ env.REPOSITORY }}:${{ env.VERSION }}
+            docker rm -f ${{ env.ARTIFACT }} || true
+            docker run -d \
+              --name ${{ env.ARTIFACT }} \
+              --restart always \
+              --memory 512m \
+              --memory-swap 1024m \
+              --network devopsNet \
+              -p 80:10000 \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e SPRING_DATASOURCE_USERNAME="${{ secrets.POSTGRES_USER }}" \
+              -e SPRING_DATASOURCE_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+              ghcr.io/${{ env.REPOSITORY }}:${{ env.VERSION }}
 
-      - name: ✅ Health check
+            echo "⏳ Esperando a que se levante"
+            HEALTHY=false
+            for i in $(seq 1 8); do
+              sleep 15
+              if curl -fsS http://localhost/actuator/health | grep -q '"status":"UP"'; then
+                HEALTHY=true
+                break
+              fi
+              echo "Intento $i: todavía no responde"
+            done
+
+            if [ "$HEALTHY" != "true" ]; then
+              echo "❌ Deploy fallido"
+              docker logs --tail 50 ${{ env.ARTIFACT }}
+              exit 1
+            fi
+
+            echo "✅ Deploy exitoso"
+            docker image prune --filter "until=12h" -f
+
+      - name: ✅ Public health check
         run: |
-          curl --fail --silent --show-error --retry 12 --retry-delay 10 --retry-all-errors \
+          curl --fail --silent --show-error --retry 6 --retry-delay 10 --retry-all-errors \
             "http://${{ secrets.LIGHTSAIL_HOST }}/actuator/health"
