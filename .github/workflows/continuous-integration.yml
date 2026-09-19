@@ -51,6 +51,9 @@ jobs:
 
       - name: ✅ Run Unit & Integration Test & Functional Test
         run: mvn -B verify
+        env:
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
 
       - name: 🔔 Notify Slack on failure
         if: failure()
@@ -127,10 +130,13 @@ jobs:
                   "type": "actions",
                   "elements": [
                     {
-                      "type": "plain_text",
-                      "text": "Ver logs"
-                    },
-                    "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Ver logs"
+                      },
+                      "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
                   ]
                 }
               ]
