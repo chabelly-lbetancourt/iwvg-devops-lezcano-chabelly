@@ -4,6 +4,7 @@ import es.upm.miw.devops.code.Role;
 import es.upm.miw.devops.code.User;
 import es.upm.miw.devops.repository.UserRepository;
 import es.upm.miw.devops.rest.dto.UserActiveDto;
+import es.upm.miw.devops.rest.dto.UserUpdateDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -113,8 +114,8 @@ class UserServiceTest {
     @Test
     void testUpdateWhenUserExists() {
         User existing = new User("1", "Oscar", "Fernandez", new ArrayList<>());
-        User newData = new User("ignored", "Oscar", "Updated", new ArrayList<>());
-        newData.setEmail("new@example.com");
+        UserUpdateDto newData = new UserUpdateDto("Oscar", "Updated", "new@example.com",
+                null, null, null, null, null);
         when(this.userRepository.findById("1")).thenReturn(Optional.of(existing));
         when(this.userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -129,9 +130,10 @@ class UserServiceTest {
     @Test
     void testUpdateWhenUserNotExists() {
         when(this.userRepository.findById("999")).thenReturn(Optional.empty());
+        UserUpdateDto newData = new UserUpdateDto(null, null, null, null, null, null, null, null);
 
         assertThrows(ResponseStatusException.class,
-                () -> this.userService.update("999", new User()));
+                () -> this.userService.update("999", newData));
         verify(this.userRepository, never()).save(any());
     }
 
