@@ -68,9 +68,7 @@ public class UserService {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Each item requires id and active");
             }
-            User user = this.readById(update.id());
-            user.setActive(update.active());
-            this.userRepository.save(user);
+            this.updateActive(update.id(), update.active());
         });
     }
 
