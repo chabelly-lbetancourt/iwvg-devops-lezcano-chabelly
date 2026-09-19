@@ -3,11 +3,11 @@ package es.upm.miw.devops.service;
 import es.upm.miw.devops.code.Role;
 import es.upm.miw.devops.code.User;
 import es.upm.miw.devops.repository.UserRepository;
-import es.upm.miw.devops.rest.dto.UserActiveDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import es.upm.miw.devops.rest.dto.UserActiveDto;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -67,7 +67,10 @@ public class UserService {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "Each item requires id and active");
             }
-            this.updateActive(update.id(), update.active());
+            User user = this.readById(update.id());
+            user.setActive(update.active());
+            this.userRepository.save(user);
         });
     }
+
 }

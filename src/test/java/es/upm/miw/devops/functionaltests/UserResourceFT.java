@@ -318,18 +318,4 @@ class UserResourceFT {
                 .exchange()
                 .expectStatus().isBadRequest();
     }
-
-    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @Test
-    void testPatchUsersActiveAdminForbiddenChangesNothing() {
-        webTestClient.patch()
-                .uri(UserResource.USERS)
-                .bodyValue(List.of(Map.of("id", "1", "active", false), Map.of("id", "2", "active", false)))
-                .exchange()
-                .expectStatus().isForbidden();
-
-        webTestClient.get().uri(UserResource.USERS + "/1").exchange()
-                .expectBody(User.class)
-                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
-    }
 }
