@@ -169,4 +169,18 @@ class UserServiceTest {
         assertThrows(ResponseStatusException.class,
                 () -> this.userService.updateActiveAll(List.of(new UserActiveDto(null, true))));
     }
+
+    @Test
+    void testUpdateActiveAllAdminDeactivateThrowsForbidden() {
+        User admin = new User("2", "Ana", "Blanco", new ArrayList<>());
+        admin.addRole(Role.ADMIN);
+        when(this.userRepository.findById("2")).thenReturn(Optional.of(admin));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> this.userService.updateActiveAll(List.of(new UserActiveDto("2", false))));
+
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+        assertTrue(admin.isActive());
+        verify(this.userRepository, never()).save(any());
+    }
 }
