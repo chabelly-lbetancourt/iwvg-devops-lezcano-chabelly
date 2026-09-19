@@ -13,6 +13,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -236,5 +239,97 @@ class UserResourceFT {
                 .uri(UserResource.USERS + "/2/active?active=true")
                 .exchange()
                 .expectStatus().isOk();
+    }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testUpdateUser() {
+        Map<String, Object> body = Map.of(
+                "firstName", "Oscar", "familyName", "Updated", "email", "oscar.new@example.com",
+                "identity", "12345678A", "address", "Calle Nueva 2", "city", "Madrid",
+                "province", "Madrid", "postalCode", "28002");
+
+        webTestClient.put()
+                .uri(UserResource.USERS + "/1")
+                .bodyValue(body)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(User.class)
+                .value(user -> assertThat(user)
+                        .hasFieldOrPropertyWithValue("id", "1")
+                        .hasFieldOrPropertyWithValue("familyName", "Updated")
+                        .hasFieldOrPropertyWithValue("address", "Calle Nueva 2"));
+
+        webTestClient.get()
+                .uri(UserResource.USERS + "/1")
+                .exchange()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("city", "Madrid")
+                        .hasFieldOrPropertyWithValue("postalCode", "28002"));
+    }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testUpdateUserNotFound() {
+        webTestClient.put()
+                .uri(UserResource.USERS + "/999")
+                .bodyValue(Map.of("firstName", "A", "familyName", "B"))
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testPatchUsersActive() {
+        webTestClient.patch()
+                .uri(UserResource.USERS)
+                .bodyValue(List.of(Map.of("id", "1", "active", false), Map.of("id", "3", "active", true)))
+                .exchange()
+                .expectStatus().isOk();
+
+        webTestClient.get().uri(UserResource.USERS + "/1").exchange()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", false));
+        webTestClient.get().uri(UserResource.USERS + "/3").exchange()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
+    }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testPatchUsersActiveNotFoundChangesNothing() {
+        webTestClient.patch()
+                .uri(UserResource.USERS)
+                .bodyValue(List.of(Map.of("id", "1", "active", false), Map.of("id", "999", "active", true)))
+                .exchange()
+                .expectStatus().isNotFound();
+
+        webTestClient.get().uri(UserResource.USERS + "/1").exchange()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
+    }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testPatchUsersActiveBadRequest() {
+        webTestClient.patch()
+                .uri(UserResource.USERS)
+                .bodyValue(List.of(Map.of("id", "1")))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Sql(scripts = "/reset-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+    @Test
+    void testPatchUsersActiveAdminForbiddenChangesNothing() {
+        webTestClient.patch()
+                .uri(UserResource.USERS)
+                .bodyValue(List.of(Map.of("id", "1", "active", false), Map.of("id", "2", "active", false)))
+                .exchange()
+                .expectStatus().isForbidden();
+
+        webTestClient.get().uri(UserResource.USERS + "/1").exchange()
+                .expectBody(User.class)
+                .value(user -> assertThat(user).hasFieldOrPropertyWithValue("active", true));
     }
 }
