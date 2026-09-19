@@ -3,6 +3,7 @@ package es.upm.miw.devops.service;
 import es.upm.miw.devops.code.Role;
 import es.upm.miw.devops.code.User;
 import es.upm.miw.devops.repository.UserRepository;
+import es.upm.miw.devops.rest.dto.UserUpdateDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -47,16 +48,16 @@ public class UserService {
         this.userRepository.save(user);
     }
 
-    public User update(String id, User newData) {
+    public User update(String id, UserUpdateDto newData) {
         User user = this.readById(id);
-        user.setFirstName(newData.getFirstName());
-        user.setFamilyName(newData.getFamilyName());
-        user.setEmail(newData.getEmail());
-        user.setIdentity(newData.getIdentity());
-        user.setAddress(newData.getAddress());
-        user.setCity(newData.getCity());
-        user.setProvince(newData.getProvince());
-        user.setPostalCode(newData.getPostalCode());
+        user.setFirstName(newData.firstName());
+        user.setFamilyName(newData.familyName());
+        user.setEmail(newData.email());
+        user.setIdentity(newData.identity());
+        user.setAddress(newData.address());
+        user.setCity(newData.city());
+        user.setProvince(newData.province());
+        user.setPostalCode(newData.postalCode());
         return this.userRepository.save(user);
     }
 
